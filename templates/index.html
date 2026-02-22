@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pritam AI - RAG Search</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a2f1a 50%, #000000 100%);
+            color: #ffffff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 255, 0, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 255, 0, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            animation: pulseGlow 8s ease-in-out infinite;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: rgba(0, 255, 0, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { border-color: rgba(0, 255, 0, 0.3); box-shadow: 0 0 20px rgba(0, 255, 0, 0.1); }
+            50% { border-color: rgba(0, 255, 0, 0.8); box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 1s ease-out;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 4em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #00ff00 50%, #ffffff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 5s ease infinite;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #cccccc;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Info Cards Section */
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .info-card {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .info-card:hover::before {
+            left: 100%;
+        }
+
+        .info-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(0, 255, 0, 0.6);
+            box-shadow: 0 20px 40px rgba(0, 255, 0, 0.2);
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.5));
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        .info-card h3 {
+            font-size: 1.5em;
+            color: #00ff00;
+            margin-bottom: 15px;
+        }
+
+        .info-card p {
+            color: #cccccc;
+            line-height: 1.6;
+        }
+
+        /* About Pritam Section */
+        .about-pritam {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 30px;
+            padding: 40px;
+            margin: 60px 0;
+            position: relative;
+            overflow: hidden;
+            animation: borderGlow 4s ease-in-out infinite;
+        }
+
+        .about-pritam h2 {
+            font-size: 2.5em;
+            color: #00ff00;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .pritam-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .pritam-item {
+            padding: 20px;
+            border-left: 3px solid #00ff00;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 0 15px 15px 0;
+            transform: translateX(0);
+            transition: all 0.3s ease;
+        }
+
+        .pritam-item:hover {
+            transform: translateX(10px);
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: -5px 5px 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .pritam-item h4 {
+            font-size: 1.3em;
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+
+        .pritam-item p {
+            color: #ffffff;
+            line-height: 1.8;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-section h2 {
+            font-size: 2em;
+            color: #00ff00;
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 50px;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .top-k-input {
+            width: 100px;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 50px;
+            color: #ffffff;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .top-k-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .search-btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            background: linear-gradient(135deg, #00ff00, #008000);
+            border: none;
+            border-radius: 50px;
+            color: #000000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .search-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.4);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .loading.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(0, 255, 0, 0.1);
+            border-top: 5px solid #00ff00;
+            border-right: 5px solid #00ff00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #00ff00;
+            font-size: 1.2em;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        /* RAG Workflow Section */
+        .rag-workflow {
+            margin: 60px 0;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 30px;
+        }
+
+        .rag-workflow h3 {
+            font-size: 2em;
+            color: #00ff00;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .workflow-steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step:hover {
+            transform: translateY(-10px);
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #00ff00;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #00ff00;
+            color: #000000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 0 auto 20px;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .step h4 {
+            color: #00ff00;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .step p {
+            color: #cccccc;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .search-input, .top-k-input, .search-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating particles -->
+    <script>
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particle.style.animationDuration = (5 + Math.random() * 5) + 's';
+            document.body.appendChild(particle);
+        }
+    </script>
+
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Pritam AI</h1>
+            <p>Intelligent RAG Search System - Specialized in Pritam's Career & Achievements</p>
+            <div style="position: absolute; top: 20px; right: 20px;">
+    <a href="/upload-page" style="color: #00ff00; text-decoration: none; padding: 10px 20px; border: 1px solid #00ff00; border-radius: 50px; margin-right: 10px;">📤 Upload</a>
+    <a href="/" style="color: #00ff00; text-decoration: none; padding: 10px 20px; border: 1px solid #00ff00; border-radius: 50px;">🔍 Search</a>
+</div>
+        </div>
+
+        <!-- About Pritam Section -->
+        <div class="about-pritam">
+            <h2>🎯 About Pritam</h2>
+            <div class="pritam-content">
+                <div class="pritam-item">
+                    <h4>🌟 Professional Background</h4>
+                    <p>Pritam is a highly skilled AI and Machine Learning engineer with expertise in developing cutting-edge RAG systems and intelligent search applications. With a strong background in natural language processing and vector databases, Pritam has revolutionized how information is retrieved and processed.</p>
+                </div>
+                <div class="pritam-item">
+                    <h4>🚀 Career Achievements</h4>
+                    <p>• Developed multiple production-ready RAG systems serving millions of queries<br>• Expertise in FAISS, ChromaDB, and Pinecone vector databases<br>• Specialized in LangChain and LlamaIndex frameworks<br>• Created innovative solutions for semantic search and document understanding</p>
+                </div>
+                <div class="pritam-item">
+                    <h4>💡 Technical Expertise</h4>
+                    <p>Pritam's technical stack includes Python, PyTorch, TensorFlow, and various embedding models. He has implemented state-of-the-art retrieval systems combining dense and sparse embeddings for maximum accuracy.</p>
+                </div>
+                <div class="pritam-item">
+                    <h4>🎓 Current Focus</h4>
+                    <p>Currently working on advanced RAG architectures including multi-modal retrieval, hybrid search approaches, and real-time document processing systems that push the boundaries of information retrieval.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RAG Workflow Explanation -->
+        <div class="rag-workflow">
+            <h3>🔍 How RAG Search Works</h3>
+            <div class="workflow-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h4>Document Processing</h4>
+                    <p>Documents are chunked and converted into vector embeddings using state-of-the-art models</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h4>Vector Storage</h4>
+                    <p>Embeddings are stored in FAISS vector database for fast similarity search</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h4>Query Processing</h4>
+                    <p>Your query is converted to embeddings and matched against stored vectors</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h4>Smart Retrieval</h4>
+                    <p>Most relevant documents are retrieved using advanced similarity algorithms</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h4>Response Generation</h4>
+                    <p>Retrieved context is used to generate accurate, contextual responses</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="info-section">
+            <div class="info-card">
+                <div class="card-icon">🎯</div>
+                <h3>Specialized Knowledge</h3>
+                <p>This AI is specifically trained on Pritam's career, achievements, and technical expertise in RAG systems and machine learning.</p>
+            </div>
+            <div class="info-card">
+                <div class="card-icon">⚡</div>
+                <h3>Real-time Processing</h3>
+                <p>Advanced vector search technology ensures millisecond response times for your queries about Pritam's work.</p>
+            </div>
+            <div class="info-card">
+                <div class="card-icon">🧠</div>
+                <h3>Smart Responses</h3>
+                <p>Using state-of-the-art language models to provide accurate and contextual information about Pritam's career.</p>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section" id="search-section">
+            <h2>Ask About Pritam</h2>
+            <p style="color: #cccccc; margin-bottom: 30px;">Get detailed information about Pritam's career, projects, and achievements</p>
+            
+            <form id="search-form" class="search-form" action="/search" method="POST" onsubmit="showLoading()">
+                <input type="text" id="search-query" name="query" class="search-input" 
+                       placeholder="e.g., What are Pritam's major achievements?" required>
+                <input type="number" id="top_k" name="top_k" class="top-k-input" value="5" min="1" max="20">
+                <button type="submit" class="search-btn">Search →</button>
+            </form>
+
+            <div style="margin-top: 30px; color: #888; font-size: 0.9em;">
+                <p>💡 Try asking: "What is Pritam's expertise?" or "Tell me about Pritam's RAG projects"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Animation -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Searching Pritam's Knowledge Base...</p>
+    </div>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+        }
+
+        // Add smooth scroll animation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add intersection observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.info-card, .about-pritam, .step').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

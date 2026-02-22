@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Documents - Pritam AI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a2f1a 50%, #000000 100%);
+            color: #ffffff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 255, 0, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 255, 0, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            animation: pulseGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 1s ease-out;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #00ff00 50%, #ffffff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 5s ease infinite;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #cccccc;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 30px;
+            padding: 50px;
+            margin-bottom: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: borderGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { border-color: rgba(0, 255, 0, 0.3); box-shadow: 0 0 30px rgba(0, 255, 0, 0.1); }
+            50% { border-color: rgba(0, 255, 0, 0.8); box-shadow: 0 0 50px rgba(0, 255, 0, 0.3); }
+        }
+
+        .upload-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .upload-area {
+            border: 3px dashed rgba(0, 255, 0, 0.5);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 255, 0, 0.02);
+        }
+
+        .upload-area:hover {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.05);
+            transform: scale(1.02);
+        }
+
+        .upload-area.dragover {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            transform: scale(1.05);
+        }
+
+        .upload-area p {
+            font-size: 1.2em;
+            color: #cccccc;
+            margin: 15px 0;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #00ff00, #008000);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            color: #000000;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .upload-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.4);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* File List */
+        .file-list {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            animation: slideIn 0.5s ease;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: rgba(0, 255, 0, 0.1);
+            transform: translateX(10px);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 1.5em;
+        }
+
+        .file-name {
+            font-weight: 500;
+        }
+
+        .file-size {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .file-status {
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: rgba(255, 170, 0, 0.2);
+            color: #ffaa00;
+        }
+
+        .status-uploading {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-completed {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+
+        .status-error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .remove-file {
+            background: none;
+            border: none;
+            color: #ff4444;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-file:hover {
+            transform: scale(1.2);
+            color: #ff0000;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #008000);
+            border-radius: 15px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #00ff00;
+        }
+
+        /* Document List Section */
+        .documents-section {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 30px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .section-header h2 {
+            color: #00ff00;
+            font-size: 1.8em;
+        }
+
+        .refresh-btn {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+            transform: rotate(180deg);
+        }
+
+        .document-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .document-card {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .document-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff00;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2);
+        }
+
+        .document-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .document-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+
+        .document-meta {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .doc-action-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            background: none;
+            color: #00ff00;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .doc-action-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .doc-action-btn.delete:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff00;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 4px solid #00ff00;
+            border-radius: 10px;
+            color: #ffffff;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.error {
+            border-left-color: #ff4444;
+        }
+
+        .toast.success {
+            border-left-color: #00ff00;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .upload-section {
+                padding: 30px;
+            }
+            
+            .document-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📤 Document Upload</h1>
+            <p>Upload PDF documents to enhance Pritam's knowledge base</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-icon">📄</div>
+            <h2 style="color: #00ff00; margin-bottom: 15px;">Drag & Drop Files Here</h2>
+            <p>Supported formats: PDF (Max size: 50MB)</p>
+            
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="upload-area" id="dropArea">
+                    <p>📁 Click to browse or drag files</p>
+                    <input type="file" id="fileInput" name="files" multiple accept=".pdf" style="display: none;">
+                </div>
+                
+                <button type="button" class="upload-btn" id="uploadButton" onclick="document.getElementById('fileInput').click();">
+                    <span>📂</span> Select Files
+                </button>
+                
+                <button type="submit" class="upload-btn" id="submitButton" style="margin-left: 15px;" disabled>
+                    <span>🚀</span> Upload & Process
+                </button>
+            </form>
+
+            <!-- File List -->
+            <div class="file-list" id="fileList"></div>
+
+            <!-- Progress Bar -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="progress-text" id="progressText">Ready to upload</div>
+            </div>
+        </div>
+
+        <!-- Document List Section -->
+        <div class="documents-section">
+            <div class="section-header">
+                <h2>📚 Indexed Documents</h2>
+                <button class="refresh-btn" onclick="loadDocuments()" id="refreshBtn">↻</button>
+            </div>
+            <div class="document-grid" id="documentGrid">
+                <div style="text-align: center; color: #888; grid-column: 1/-1; padding: 40px;">
+                    <div class="spinner" style="width: 40px; height: 40px;"></div>
+                    <p style="margin-top: 15px;">Loading documents...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Drag and drop functionality
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const submitButton = document.getElementById('submitButton');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        let selectedFiles = [];
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop area on drag over
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.classList.add('dragover');
+        }
+
+        function unhighlight() {
+            dropArea.classList.remove('dragover');
+        }
+
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            // Filter only PDF files
+            const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+            
+            if (pdfFiles.length === 0) {
+                showToast('Please select only PDF files', 'error');
+                return;
+            }
+
+            // Check file size (50MB limit)
+            const validFiles = pdfFiles.filter(file => file.size <= 50 * 1024 * 1024);
+            
+            if (validFiles.length !== pdfFiles.length) {
+                showToast('Some files exceed 50MB limit', 'error');
+            }
+
+            selectedFiles = [...selectedFiles, ...validFiles];
+            updateFileList();
+            submitButton.disabled = selectedFiles.length === 0;
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <div>
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="file-status status-pending">Pending</span>
+                        <button class="remove-file" onclick="removeFile(${index})">✕</button>
+                    </div>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        window.removeFile = function(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+            submitButton.disabled = selectedFiles.length === 0;
+            fileInput.value = '';
+        };
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (selectedFiles.length === 0) {
+                showToast('Please select files to upload', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            // Show progress bar
+            progressContainer.classList.add('active');
+            submitButton.disabled = true;
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    progressFill.style.width = '100%';
+                    progressText.textContent = 'Upload complete! Processing documents...';
+                    
+                    // Update file status
+                    document.querySelectorAll('.file-status').forEach(el => {
+                        el.className = 'file-status status-completed';
+                        el.textContent = 'Completed';
+                    });
+
+                    showToast('Files uploaded and processed successfully!', 'success');
+                    
+                    // Clear selected files after successful upload
+                    setTimeout(() => {
+                        selectedFiles = [];
+                        fileList.innerHTML = '';
+                        progressContainer.classList.remove('active');
+                        progressFill.style.width = '0%';
+                        submitButton.disabled = true;
+                        fileInput.value = '';
+                        loadDocuments(); // Refresh document list
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Upload failed');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showToast(error.message, 'error');
+                progressContainer.classList.remove('active');
+                submitButton.disabled = false;
+                
+                // Mark failed files
+                document.querySelectorAll('.file-status').forEach(el => {
+                    el.className = 'file-status status-error';
+                    el.textContent = 'Failed';
+                });
+            }
+        });
+
+        // Load existing documents
+        async function loadDocuments() {
+            const grid = document.getElementById('documentGrid');
+            const refreshBtn = document.getElementById('refreshBtn');
+            
+            try {
+                refreshBtn.classList.add('spinner');
+                const response = await fetch('/api/documents');
+                const data = await response.json();
+                
+                if (data.documents && data.documents.length > 0) {
+                    grid.innerHTML = data.documents.map(doc => `
+                        <div class="document-card">
+                            <div class="document-icon">📄</div>
+                            <div class="document-name">${doc.name}</div>
+                            <div class="document-meta">${doc.size} • ${doc.date}</div>
+                            <div class="document-actions">
+                                <button class="doc-action-btn" onclick="viewDocument('${doc.name}')">View</button>
+                                <button class="doc-action-btn delete" onclick="deleteDocument('${doc.name}')">Delete</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = '<div style="text-align: center; color: #888; grid-column: 1/-1; padding: 40px;">📁 No documents found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                grid.innerHTML = '<div style="text-align: center; color: #ff4444; grid-column: 1/-1; padding: 40px;">❌ Error loading documents</div>';
+            } finally {
+                refreshBtn.classList.remove('spinner');
+            }
+        }
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Document actions
+        window.viewDocument = function(filename) {
+            window.open(`/api/documents/${filename}`, '_blank');
+        };
+
+        window.deleteDocument = async function(filename) {
+            if (confirm(`Are you sure you want to delete ${filename}?`)) {
+                try {
+                    const response = await fetch(`/api/documents/${filename}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        showToast('Document deleted successfully', 'success');
+                        loadDocuments();
+                    } else {
+                        throw new Error('Delete failed');
+                    }
+                } catch (error) {
+                    showToast('Error deleting document', 'error');
+                }
+            }
+        };
+
+        // Load documents on page load
+        document.addEventListener('DOMContentLoaded', loadDocuments);
+    </script>
+</body>
+</html>
