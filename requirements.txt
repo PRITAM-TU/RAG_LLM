@@ -11,4 +11,5 @@ python-dotenv
 flask 
 PyPDF2
 werkzeug
+gunicorn
 #-e 
