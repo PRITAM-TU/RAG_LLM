@@ -404,11 +404,22 @@ def health():
     })
 
 if __name__ == "__main__":
-    # Initialize the search system before starting the server
+     # Initialize the search system before starting the server
     print("Initializing RAG Search Application...")
     initialize_search_system()
     
     print(f"Upload folder: {UPLOAD_FOLDER}")
     print(f"Document count: {len([f for f in os.listdir(UPLOAD_FOLDER) if f.endswith('.pdf')])}")
-    print("Starting Flask server...")
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    
+    # --- CRITICAL CHANGE FOR RENDER ---
+    # Get the port from the environment variable (provided by Render)
+    # Default to 10000 if not found, as Render's default is 10000
+    port = int(os.environ.get('PORT', 10000))
+    # Bind to 0.0.0.0 to accept connections from anywhere (required by Render)
+    host = '0.0.0.0'
+    
+    print(f"Starting Flask server on {host}:{port}...")
+    
+    # Run the app with the host and port Render expects
+    # IMPORTANT: Set debug=False for production! Debug mode can cause issues.
+    app.run(host=host, port=port, debug=False)
